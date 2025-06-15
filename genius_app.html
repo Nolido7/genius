@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente Escolar IA</title>
+    <style>
+        /* CSS para Estilos e Temas (Claro e Escuro) */
+        :root {
+            --cor-fundo: #f0f2f5;
+            --cor-texto: #1c1e21;
+            --cor-fundo-chat: #ffffff;
+            --cor-fundo-input: #e4e6eb;
+            --cor-borda: #dcdfe3;
+            --cor-bolha-usuario: #0084ff;
+            --cor-texto-bolha-usuario: #ffffff;
+            --cor-bolha-ia: #e4e6eb;
+            --cor-texto-bolha-ia: #050505;
+            --cor-sombra: rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode {
+            --cor-fundo: #18191a;
+            --cor-texto: #e4e6eb;
+            --cor-fundo-chat: #242526;
+            --cor-fundo-input: #3a3b3c;
+            --cor-borda: #3a3b3c;
+            --cor-bolha-usuario: #0084ff;
+            --cor-texto-bolha-usuario: #ffffff;
+            --cor-bolha-ia: #3a3b3c;
+            --cor-texto-bolha-ia: #e4e6eb;
+            --cor-sombra: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #app-container {
+            width: 95%;
+            max-width: 600px;
+            height: 95vh;
+            max-height: 800px;
+            background-color: var(--cor-fundo-chat);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px var(--cor-sombra);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--cor-borda);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        #theme-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input { display: none; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: #0084ff; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        #chat-window {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .user-message {
+            background-color: var(--cor-bolha-usuario);
+            color: var(--cor-texto-bolha-usuario);
+            align-self: flex-end;
+        }
+
+        .ai-message {
+            background-color: var(--cor-bolha-ia);
+            color: var(--cor-texto-bolha-ia);
+            align-self: flex-start;
+        }
+        
+        .loading-indicator {
+            align-self: flex-start;
+        }
+        
+        .loading-indicator span {
+             display: inline-block;
+             width: 8px; height: 8px;
+             border-radius: 50%;
+             background-color: var(--cor-texto-bolha-ia);
+             animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .loading-indicator .dot1 { animation-delay: -0.32s; }
+        .loading-indicator .dot2 { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        #input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid var(--cor-borda);
+            gap: 10px;
+            align-items: center;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            border: none;
+            background-color: var(--cor-fundo-input);
+            border-radius: 18px;
+            padding: 10px 15px;
+            font-size: 16px;
+            color: var(--cor-texto);
+        }
+        #user-input:focus {
+            outline: none;
+        }
+
+        #image-upload-label, #send-btn {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 5px;
+        }
+        
+        #image-preview {
+            position: relative;
+            margin-bottom: 5px;
+        }
+        
+        #preview-img {
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 8px;
+            margin-right: 10px;
+        }
+
+        #remove-img-btn {
+            position: absolute;
+            top: -5px;
+            right: 0px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <header id="header">
+            <h1>Assistente Escolar 🤖</h1>
+            <label id="theme-switcher">
+                <span id="theme-text">🌙</span>
+                <div class="switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider"></span>
+                </div>
+            </label>
+        </header>
+
+        <div id="chat-window">
+            <div class="message ai-message">
+                Olá! Como posso te ajudar com seus estudos hoje? Você pode me enviar uma pergunta ou uma foto de um exercício.
+            </div>
+        </div>
+
+        <div id="input-area-container">
+            <div id="image-preview-container" style="padding: 0 15px;"></div>
+            <form id="input-area">
+                <label id="image-upload-label" for="image-upload">📎</label>
+                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                
+                <input type="text" id="user-input" placeholder="Digite sua pergunta aqui...">
+                
+                <button id="send-btn" type="submit">➤</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // JAVASCRIPT para a lógica do App
+
+        // --- 1. CONFIGURAÇÃO INICIAL E SELEÇÃO DE ELEMENTOS ---
+
+        // ⚠️ COLE SUA CHAVE DE API AQUI DENTRO DAS ASPAS ⚠️
+        const API_KEY = 'AIzaSyBDuHdVvr0nSLfiv1W2TzgvsePWzlaynF8'; 
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        
+        const form = document.getElementById('input-area');
+        const inputField = document.getElementById('user-input');
+        const chatWindow = document.getElementById('chat-window');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeText = document.getElementById('theme-text');
+        const imageUploadInput = document.getElementById('image-upload');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        
+        let uploadedImageBase64 = null; // Variável para guardar a imagem
+
+        // --- 2. LÓGICA DO TEMA (CLARO/ESCURO) ---
+
+        themeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+            themeText.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        });
+
+        // --- 3. LÓGICA DE UPLOAD E PREVIEW DE IMAGEM ---
+
+        imageUploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                uploadedImageBase64 = reader.result.split(',')[1]; // Pega só a parte base64
+                
+                // Mostra um preview da imagem
+                imagePreviewContainer.innerHTML = `
+                    <div id="image-preview">
+                        <img src="${reader.result}" id="preview-img" />
+                        <button id="remove-img-btn">x</button>
+                    </div>
+                `;
+                document.getElementById('remove-img-btn').addEventListener('click', removeImage);
+            };
+            reader.readAsDataURL(file); // Converte a imagem para Base64
+        });
+        
+        function removeImage() {
+            uploadedImageBase64 = null;
+            imagePreviewContainer.innerHTML = '';
+            imageUploadInput.value = ''; // Reseta o input de arquivo
+        }
+
+        // --- 4. LÓGICA PRINCIPAL DE ENVIO DE MENSAGEM ---
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Impede o recarregamento da página
+            const userText = inputField.value.trim();
+
+            if (!userText && !uploadedImageBase64) {
+                return; // Não faz nada se não houver texto nem imagem
+            }
+
+            addMessage(userText, 'user');
+            inputField.value = '';
+            showLoadingIndicator();
+
+            try {
+                // Prepara os "parts" para a API
+                const parts = [];
+                if(userText) {
+                    parts.push({ text: userText });
+                }
+                if(uploadedImageBase64) {
+                    parts.push({
+                        inline_data: {
+                            mime_type: "image/jpeg", // ou png, dependendo do arquivo
+                            data: uploadedImageBase64
+                        }
+                    });
+                }
+                
+                // Monta o corpo da requisição
+                const requestBody = {
+                    contents: [{ parts: parts }]
+                };
+
+                // Chama a API
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const aiText = data.candidates[0].content.parts[0].text;
+                
+                removeLoadingIndicator();
+                addMessage(aiText, 'ai');
+                removeImage(); // Limpa a imagem após o envio bem-sucedido
+
+            } catch (error) {
+                console.error("Erro:", error);
+                removeLoadingIndicator();
+                addMessage("Desculpe, ocorreu um erro. Verifique sua chave de API e a conexão.", 'ai');
+            }
+        });
+        
+        // --- 5. FUNÇÕES AUXILIARES ---
+
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            messageElement.textContent = text || ' '; // Adiciona espaço se a msg for só uma imagem
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight; // Rola para a mensagem mais recente
+        }
+        
+        function showLoadingIndicator() {
+            const loadingElement = document.createElement('div');
+            loadingElement.classList.add('message', 'loading-indicator');
+            loadingElement.innerHTML = `<span class="dot1"></span><span class="dot2"></span><span class="dot3"></span>`;
+            chatWindow.appendChild(loadingElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function removeLoadingIndicator() {
+            const indicator = chatWindow.querySelector('.loading-indicator');
+            if (indicator) {
+                chatWindow.removeChild(indicator);
+            }
+        }
+    </script>
+
+</body>
+  </html>
