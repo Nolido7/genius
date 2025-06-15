@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Assistente Escolar IA</title>
     <style>
         /* CSS para Estilos e Temas (Claro e Escuro) */
@@ -16,7 +16,7 @@
             --cor-texto-bolha-usuario: #ffffff;
             --cor-bolha-ia: #e4e6eb;
             --cor-texto-bolha-ia: #050505;
-            --cor-sombra: rgba(0, 0, 0, 0.1);
+            --cor-creditos: #8a8d91;
         }
 
         body.dark-mode {
@@ -29,33 +29,34 @@
             --cor-texto-bolha-usuario: #ffffff;
             --cor-bolha-ia: #3a3b3c;
             --cor-texto-bolha-ia: #e4e6eb;
-            --cor-sombra: rgba(0, 0, 0, 0.3);
+            --cor-creditos: #8a8d91;
+        }
+
+        /* AJUSTES PARA TELA CHEIA */
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            overflow: hidden; /* Evita barras de rolagem no corpo da página */
         }
 
         body {
-            margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--cor-fundo);
             color: var(--cor-texto);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             transition: background-color 0.3s, color 0.3s;
         }
 
         #app-container {
-            width: 95%;
-            max-width: 600px;
-            height: 95vh;
-            max-height: 800px;
+            width: 100%;
+            height: 100%; /* Ocupa 100% da altura da tela */
             background-color: var(--cor-fundo-chat);
-            border-radius: 16px;
-            box-shadow: 0 4px 12px var(--cor-sombra);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
+        /* Fim dos ajustes de tela cheia */
+
 
         #header {
             padding: 15px 20px;
@@ -63,6 +64,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0; /* Impede que o header encolha */
         }
         
         #header h1 {
@@ -109,9 +111,9 @@
         input:checked + .slider:before { transform: translateX(20px); }
 
         #chat-window {
-            flex-grow: 1;
+            flex-grow: 1; /* Faz o chat ocupar todo o espaço disponível */
             padding: 20px;
-            overflow-y: auto;
+            overflow-y: auto; /* Adiciona rolagem apenas no chat */
             display: flex;
             flex-direction: column;
         }
@@ -122,6 +124,7 @@
             border-radius: 18px;
             margin-bottom: 10px;
             line-height: 1.4;
+            word-wrap: break-word; /* Garante que palavras longas quebrem a linha */
         }
 
         .user-message {
@@ -155,9 +158,14 @@
             40% { transform: scale(1.0); }
         }
 
+        #input-area-container {
+            flex-shrink: 0; /* Impede que a área de input encolha */
+            background-color: var(--cor-fundo-chat);
+        }
+
         #input-area {
             display: flex;
-            padding: 15px;
+            padding: 10px 15px;
             border-top: 1px solid var(--cor-borda);
             gap: 10px;
             align-items: center;
@@ -168,8 +176,8 @@
             border: none;
             background-color: var(--cor-fundo-input);
             border-radius: 18px;
-            padding: 10px 15px;
-            font-size: 16px;
+            padding: 12px 15px;
+            font-size: 16px; /* Tamanho bom para mobile, evita zoom automático */
             color: var(--cor-texto);
         }
         #user-input:focus {
@@ -184,8 +192,13 @@
             padding: 5px;
         }
         
+        #image-preview-container {
+             padding: 0 15px;
+        }
+
         #image-preview {
             position: relative;
+            display: inline-block; /* Garante que o container se ajuste à imagem */
             margin-bottom: 5px;
         }
         
@@ -193,23 +206,33 @@
             max-width: 80px;
             max-height: 80px;
             border-radius: 8px;
-            margin-right: 10px;
         }
 
         #remove-img-btn {
             position: absolute;
-            top: -5px;
-            right: 0px;
+            top: -8px;
+            right: -8px;
             background: #fff;
             border: 1px solid #ccc;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             cursor: pointer;
             font-weight: bold;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-size: 14px;
+        }
+        
+        /* Seção de Créditos */
+        #footer-credits {
+            text-align: center;
+            padding: 8px;
+            font-size: 12px;
+            color: var(--cor-creditos);
+            background-color: var(--cor-fundo-chat);
+            border-top: 1px solid var(--cor-borda);
         }
 
     </style>
@@ -235,8 +258,8 @@
         </div>
 
         <div id="input-area-container">
-            <div id="image-preview-container" style="padding: 0 15px;"></div>
-            <form id="input-area">
+            <div id="image-preview-container"></div>
+            <form id="input-area" onsubmit="handleSendMessage(event)">
                 <label id="image-upload-label" for="image-upload">📎</label>
                 <input type="file" id="image-upload" accept="image/*" style="display: none;">
                 
@@ -244,6 +267,9 @@
                 
                 <button id="send-btn" type="submit">➤</button>
             </form>
+            <div id="footer-credits">
+                Criado com carinho por Max Odilon ❤️
+            </div>
         </div>
     </div>
 
@@ -252,8 +278,8 @@
 
         // --- 1. CONFIGURAÇÃO INICIAL E SELEÇÃO DE ELEMENTOS ---
 
-        // ⚠️ COLE SUA CHAVE DE API AQUI DENTRO DAS ASPAS ⚠️
-        const API_KEY = 'AIzaSyBDuHdVvr0nSLfiv1W2TzgvsePWzlaynF8'; 
+        // ⚠️ COLE SUA NOVA E SEGURA CHAVE DE API AQUI DENTRO DAS ASPAS ⚠️
+        const API_KEY = 'AIzaSyC0Q3HAebNzVGzDu96vpo5NKVseWdjSCYg'; 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
         
         const form = document.getElementById('input-area');
@@ -265,6 +291,7 @@
         const imagePreviewContainer = document.getElementById('image-preview-container');
         
         let uploadedImageBase64 = null; // Variável para guardar a imagem
+        let isLoading = false; // Controla o estado de carregamento
 
         // --- 2. LÓGICA DO TEMA (CLARO/ESCURO) ---
 
@@ -281,61 +308,45 @@
 
             const reader = new FileReader();
             reader.onloadend = () => {
-                uploadedImageBase64 = reader.result.split(',')[1]; // Pega só a parte base64
+                uploadedImageBase64 = reader.result.split(',')[1];
                 
-                // Mostra um preview da imagem
                 imagePreviewContainer.innerHTML = `
                     <div id="image-preview">
                         <img src="${reader.result}" id="preview-img" />
-                        <button id="remove-img-btn">x</button>
+                        <button id="remove-img-btn" onclick="removeImage()">x</button>
                     </div>
                 `;
-                document.getElementById('remove-img-btn').addEventListener('click', removeImage);
             };
-            reader.readAsDataURL(file); // Converte a imagem para Base64
+            reader.readAsDataURL(file);
         });
         
         function removeImage() {
             uploadedImageBase64 = null;
             imagePreviewContainer.innerHTML = '';
-            imageUploadInput.value = ''; // Reseta o input de arquivo
+            imageUploadInput.value = '';
         }
 
         // --- 4. LÓGICA PRINCIPAL DE ENVIO DE MENSAGEM ---
 
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault(); // Impede o recarregamento da página
+        async function handleSendMessage(event) {
+            event.preventDefault();
+            if (isLoading) return; // Impede múltiplos envios
+
             const userText = inputField.value.trim();
+            if (!userText && !uploadedImageBase64) return;
 
-            if (!userText && !uploadedImageBase64) {
-                return; // Não faz nada se não houver texto nem imagem
-            }
-
+            isLoading = true;
             addMessage(userText, 'user');
             inputField.value = '';
             showLoadingIndicator();
 
             try {
-                // Prepara os "parts" para a API
                 const parts = [];
-                if(userText) {
-                    parts.push({ text: userText });
-                }
-                if(uploadedImageBase64) {
-                    parts.push({
-                        inline_data: {
-                            mime_type: "image/jpeg", // ou png, dependendo do arquivo
-                            data: uploadedImageBase64
-                        }
-                    });
-                }
+                if(userText) parts.push({ text: userText });
+                if(uploadedImageBase64) parts.push({ inline_data: { mime_type: "image/jpeg", data: uploadedImageBase64 } });
                 
-                // Monta o corpo da requisição
-                const requestBody = {
-                    contents: [{ parts: parts }]
-                };
+                const requestBody = { contents: [{ parts: parts }] };
 
-                // Chama a API
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -343,7 +354,8 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Erro na API: ${response.statusText}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || `Erro na API: ${response.statusText}`);
                 }
 
                 const data = await response.json();
@@ -351,27 +363,34 @@
                 
                 removeLoadingIndicator();
                 addMessage(aiText, 'ai');
-                removeImage(); // Limpa a imagem após o envio bem-sucedido
+                removeImage();
 
             } catch (error) {
                 console.error("Erro:", error);
                 removeLoadingIndicator();
-                addMessage("Desculpe, ocorreu um erro. Verifique sua chave de API e a conexão.", 'ai');
+                addMessage(`Desculpe, ocorreu um erro: ${error.message}. Verifique sua chave de API e a conexão.`, 'ai');
+            } finally {
+                isLoading = false;
             }
-        });
+        }
         
+        // Adiciona o event listener ao formulário
+        form.addEventListener('submit', handleSendMessage);
+
         // --- 5. FUNÇÕES AUXILIARES ---
 
         function addMessage(text, sender) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', `${sender}-message`);
-            messageElement.textContent = text || ' '; // Adiciona espaço se a msg for só uma imagem
+            // Usar innerHTML para renderizar Markdown básico como quebras de linha
+            messageElement.innerHTML = (text || ' ').replace(/\n/g, '<br>'); 
             chatWindow.appendChild(messageElement);
-            chatWindow.scrollTop = chatWindow.scrollHeight; // Rola para a mensagem mais recente
+            chatWindow.scrollTop = chatWindow.scrollHeight;
         }
         
         function showLoadingIndicator() {
             const loadingElement = document.createElement('div');
+            loadingElement.id = 'loading';
             loadingElement.classList.add('message', 'loading-indicator');
             loadingElement.innerHTML = `<span class="dot1"></span><span class="dot2"></span><span class="dot3"></span>`;
             chatWindow.appendChild(loadingElement);
@@ -379,7 +398,7 @@
         }
 
         function removeLoadingIndicator() {
-            const indicator = chatWindow.querySelector('.loading-indicator');
+            const indicator = document.getElementById('loading');
             if (indicator) {
                 chatWindow.removeChild(indicator);
             }
@@ -387,4 +406,4 @@
     </script>
 
 </body>
-  </html>
+</html>
